@@ -6,8 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absolutePadding
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -21,27 +19,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.Popup
 import com.example.medicinewatcher.model.Medicine
 import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
-import java.time.temporal.TemporalAmount
+import java.util.function.Predicate
 
 class MainActivity : ComponentActivity() {
-    var medicines : ArrayList<Medicine> = ArrayList()
 
+    var id : Int = 0
+    var medicines = mutableListOf<Medicine>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +59,7 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun mainPage(){
+
         var currentName by remember { mutableStateOf("") }
         var currentAmount by remember { mutableStateOf("") }
         var currentTime by remember { mutableStateOf("") }
@@ -72,28 +69,27 @@ class MainActivity : ComponentActivity() {
             LazyColumn(modifier = Modifier.size(width = LocalConfiguration.current.screenWidthDp.dp-10.dp,height =  LocalConfiguration.current.screenHeightDp.dp-50.dp),
                 contentPadding = PaddingValues(5.dp)
             ){
-                items(medicines){ medicine ->
-                    MedicineCart(medicine = medicine)
+                items(medicines){ med ->
+                    MedicineCart(medicine = med, medicines)
                 }
-
             }
             if(showDialog){
                 Dialog(onDismissRequest = {
-                        showDialog = false
-                        medicines.add(Medicine(currentName,currentAmount,currentTime))
-                        currentAmount = ""
-                        currentTime = ""
-                        currentName = ""
-                    }) {
+                    showDialog = false
+                    medicines.add(Medicine(id++,currentName,currentAmount,currentTime))
+                    currentAmount = ""
+                    currentTime = ""
+                    currentName = ""
+                }) {
                     Column {
                         TextField(value = currentName, onValueChange = {
-                                                                       currentName = it
+                            currentName = it
                         }, label = { Text(text = "Name of medicine")})
                         TextField(value = currentAmount, onValueChange = {
-                                                                         currentAmount = it
+                            currentAmount = it
                         }, label = { Text(text = "Amount of medicine")})
                         TextField(value = currentTime, onValueChange = {
-                                                                       currentTime = it
+                            currentTime = it
                         }, label = {Text("Time to take")})
                     }
                 } }
@@ -104,25 +100,50 @@ class MainActivity : ComponentActivity() {
         }
 
     }
-}
 
 
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun MedicineCart(medicine: Medicine, medicines: MutableList<Medicine>){
+        var id = medicine.id
+
+            Card(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                Column {
+                    Row(
+                        modifier = Modifier.padding(5.dp).size(
+                            width = LocalConfiguration.current.screenWidthDp.dp - 10.dp,
+                            height = 100.dp
+                        )
+                    ) {
+                        Text("Name: ${medicine.name}", modifier = Modifier.padding(5.dp))
+                        Text("Amount: ${medicine.amount}", modifier = Modifier.padding(5.dp))
+                        Text("Time: ${medicine.time}", modifier = Modifier.padding(5.dp))
+                    }
+                    Button(onClick = {
+                        try {
+                            removeItem(id)
+                        } catch (e: Exception) {
+                        }
+                    }, modifier = Modifier.align(CenterHorizontally)) {
+                        Text(text = "Took it")
+                    }
+                }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MedicineCart(medicine: Medicine){
-    Card(onClick = { /*TODO*/ }) {
-        Column {
-            Row(modifier = Modifier.padding(5.dp).size(width = LocalConfiguration.current.screenWidthDp.dp-10.dp, height = 100.dp)){
-                Text("Name: ${medicine.name}", modifier = Modifier.padding(5.dp))
-                Text("Amount: ${medicine.amount}",modifier = Modifier.padding(5.dp))
-                Text("Time: ${medicine.time}",modifier = Modifier.padding(5.dp))
-            }
-            Button(onClick = { /*TODO*/ },modifier = Modifier.align(CenterHorizontally)){
-             Text(text = "Took it")   
+        }
+    }
+
+    fun removeItem(id : Int){
+        for(item in medicines){
+            if( item.id == id ){
+                medicines.remove(item)
             }
         }
-        
     }
+
+
 }
+
+
+
+

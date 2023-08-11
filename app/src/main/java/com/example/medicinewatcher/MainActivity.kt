@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.defaultMinSize
@@ -20,6 +21,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,7 +69,9 @@ class MainActivity : ComponentActivity() {
         var showDialog by remember { mutableStateOf(false) }
 
         Column {
-            LazyColumn(modifier = Modifier.defaultMinSize(minHeight =  LocalConfiguration.current.screenHeightDp.dp-50.dp)){
+            LazyColumn(modifier = Modifier.size(width = LocalConfiguration.current.screenWidthDp.dp-10.dp,height =  LocalConfiguration.current.screenHeightDp.dp-50.dp),
+                contentPadding = PaddingValues(5.dp)
+            ){
                 items(medicines){ medicine ->
                     MedicineCart(medicine = medicine)
                 }
@@ -82,11 +86,18 @@ class MainActivity : ComponentActivity() {
                         currentName = ""
                     }) {
                     Column {
-                        TextField(value = currentName, onValueChange = {}, label = { Text(text = "Name of medicine")})
-                        TextField(value = currentAmount, onValueChange = {}, label = { Text(text = "Amount of medicine")})
-                        TextField(value = currentTime, onValueChange = {}, label = {Text("Time to take")})
+                        TextField(value = currentName, onValueChange = {
+                                                                       currentName = it
+                        }, label = { Text(text = "Name of medicine")})
+                        TextField(value = currentAmount, onValueChange = {
+                                                                         currentAmount = it
+                        }, label = { Text(text = "Amount of medicine")})
+                        TextField(value = currentTime, onValueChange = {
+                                                                       currentTime = it
+                        }, label = {Text("Time to take")})
                     }
                 } }
+
             Button(modifier = Modifier
                 .size(width = LocalConfiguration.current.screenWidthDp.dp - 10.dp, 200.dp)
                 .padding(10.dp), onClick = {showDialog = true}){}
@@ -103,10 +114,10 @@ class MainActivity : ComponentActivity() {
 fun MedicineCart(medicine: Medicine){
     Card(onClick = { /*TODO*/ }) {
         Column {
-            Row(modifier = Modifier.padding(5.dp)){
-                Text("Name: $medicine.name", modifier = Modifier.padding(5.dp))
-                Text("Amount: $medicine.amount",modifier = Modifier.padding(5.dp))
-                Text("Time: $medicine.time",modifier = Modifier.padding(5.dp))
+            Row(modifier = Modifier.padding(5.dp).size(width = LocalConfiguration.current.screenWidthDp.dp-10.dp, height = 100.dp)){
+                Text("Name: ${medicine.name}", modifier = Modifier.padding(5.dp))
+                Text("Amount: ${medicine.amount}",modifier = Modifier.padding(5.dp))
+                Text("Time: ${medicine.time}",modifier = Modifier.padding(5.dp))
             }
             Button(onClick = { /*TODO*/ },modifier = Modifier.align(CenterHorizontally)){
              Text(text = "Took it")   

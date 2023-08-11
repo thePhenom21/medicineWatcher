@@ -37,7 +37,7 @@ import java.util.function.Predicate
 class MainActivity : ComponentActivity() {
 
     var id : Int = 0
-    var medicines = mutableListOf<Medicine>()
+    var medicines = SnapshotStateList<Medicine>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun MedicineCart(medicine: Medicine, medicines: MutableList<Medicine>){
+    fun MedicineCart(medicine: Medicine, medicines: SnapshotStateList<Medicine>){
         var id = medicine.id
 
             Card(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {

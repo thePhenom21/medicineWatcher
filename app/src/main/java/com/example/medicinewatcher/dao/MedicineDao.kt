@@ -7,12 +7,12 @@ import com.example.medicinewatcher.model.Medicine
 @Dao
 interface MedicineDao {
     @Query("SELECT * FROM medicine")
-    fun getAll(): SnapshotStateList<Medicine>
+    fun getAll(): List<Medicine>
 
     @Insert
     fun insertMedicine(medicine: Medicine)
 
-    @Query("DELETE FROM medicine WHERE id")
+    @Query("DELETE FROM medicine WHERE id =:id ")
     fun deleteMedicineById(id : Int)
 
 }

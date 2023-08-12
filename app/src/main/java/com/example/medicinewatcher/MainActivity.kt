@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
         MedicineRepository::class.java,"medicines").build()
 
     val medicineDao = db.medicineDao()
-    val medicines : SnapshotStateList<Medicine> = medicineDao.getAll()
+    val medicines : SnapshotStateList<Medicine> = medicineDao.getAll() as SnapshotStateList<Medicine>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

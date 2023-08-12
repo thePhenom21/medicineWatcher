@@ -30,17 +30,27 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.room.Room
 import com.example.medicinewatcher.model.Medicine
+import com.example.medicinewatcher.repo.MedicineRepository
 import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
-import java.util.function.Predicate
+
 
 class MainActivity : ComponentActivity() {
 
     var id : Int = 0
-    var medicines = SnapshotStateList<Medicine>()
+
+    val db = Room.databaseBuilder(
+        applicationContext,
+        MedicineRepository::class.java,"medicines").build()
+
+    val medicineDao = db.medicineDao()
+    val medicines : SnapshotStateList<Medicine> = medicineDao.getAll()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
 
         setContent {
             MedicineWatcherTheme {
@@ -60,6 +70,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun mainPage(){
 
+
         var currentName by remember { mutableStateOf("") }
         var currentAmount by remember { mutableStateOf("") }
         var currentTime by remember { mutableStateOf("") }
@@ -76,7 +87,9 @@ class MainActivity : ComponentActivity() {
             if(showDialog){
                 Dialog(onDismissRequest = {
                     showDialog = false
-                    medicines.add(Medicine(id++,currentName,currentAmount,currentTime))
+                    val med : Medicine = Medicine(id++,currentName,currentAmount,currentTime)
+                    medicines.add(med)
+                    medicineDao.insertMedicine(med)
                     currentAmount = ""
                     currentTime = ""
                     currentName = ""
@@ -105,7 +118,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MedicineCart(medicine: Medicine, medicines: SnapshotStateList<Medicine>){
-        var id = medicine.id
+            var id = medicine.id
 
             Card(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
                 Column {
@@ -137,6 +150,7 @@ class MainActivity : ComponentActivity() {
         for(item in medicines){
             if( item.id == id ){
                 medicines.remove(item)
+                medicineDao.deleteMedicineById(id)
             }
         }
     }

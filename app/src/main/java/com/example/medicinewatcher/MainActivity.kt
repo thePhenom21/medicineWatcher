@@ -41,6 +41,7 @@ import com.example.medicinewatcher.repo.MedicineRepository
 import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.*
 
 
 class MainActivity : ComponentActivity() {
@@ -53,6 +54,8 @@ class MainActivity : ComponentActivity() {
     var medicineDao: MedicineDao? = null
 
     var medicines = SnapshotStateList<Medicine>()
+
+    var added = true
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,7 +102,8 @@ class MainActivity : ComponentActivity() {
             var currentAmount by remember { mutableStateOf("") }
             var currentTime by remember { mutableStateOf(LocalTime.now()) }
             var showDialog by remember { mutableStateOf(false) }
-            var showTime by remember { mutableStateOf(false) }
+            var showTime by remember { mutableStateOf(true) }
+
 
             Column {
                 LazyColumn(
@@ -114,14 +118,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 if (showDialog) {
+                    added = false
                     Dialog(onDismissRequest = {
                         showDialog = false
-                        val med: Medicine = Medicine(null,currentName, currentAmount, currentTime)
-                        medicines.add(med)
-                        insertItem(med)
-                        currentAmount = ""
-                        currentTime = LocalTime.now()
-                        currentName = ""
                     }) {
                         Column {
                             TextField(value = currentName, onValueChange = {
@@ -130,30 +129,19 @@ class MainActivity : ComponentActivity() {
                             TextField(value = currentAmount, onValueChange = {
                                 currentAmount = it
                             }, label = { Text(text = "Amount of medicine") })
-                            Button(
-                                onClick = { showTime = true })
-                            {}
-                        }
-                        if (showTime) {
-                            var l2 = showTimeDialog()
-                            if(l2[1] < 10){
-                                currentTime = LocalTime.parse(
-                                    l2[0].toString() + ":0" + l2[1].toString()
-                                        .format(DateTimeFormatter.ofPattern("HH:mm")))
-                            }
-                            else{
-                                currentTime = LocalTime.parse(
-                                    l2[0].toString() + ":" + l2[1].toString()
-                                        .format(DateTimeFormatter.ofPattern("HH:mm"))
-                                )
-                            }
-                            if(currentTime == null){
-                                currentTime = LocalTime.now()
-                            }
-                            showTime = false
                         }
                     }
                 }
+                else{
+                    if(!added){
+                        showTimeDialog(med = null, showTime = showTime,currentName,currentAmount)
+                        added = true
+                        currentAmount = ""
+                        currentTime = LocalTime.now()
+                        currentName = ""
+                    }
+                }
+
 
                 Button(modifier = Modifier
                     .size(width = LocalConfiguration.current.screenWidthDp.dp - 10.dp, 200.dp)
@@ -161,6 +149,7 @@ class MainActivity : ComponentActivity() {
             }
 
         }
+
 
 
         @RequiresApi(Build.VERSION_CODES.O)
@@ -203,24 +192,44 @@ class MainActivity : ComponentActivity() {
 
         @RequiresApi(Build.VERSION_CODES.O)
         @Composable
-        fun showTimeDialog(): ArrayList<Int> {
-            var picker = TimePicker(applicationContext)
-            var timeListener: OnTimeSetListener = OnTimeSetListener { _, i, i2 ->
-                picker.hour = i
-                picker.minute = i2
+        fun showTimeDialog(med: Medicine?, showTime: Boolean,currentName : String,currentAmount: String) {
+            var t : LocalTime? = null
+            if(showTime) {
+                var picker = TimePicker(applicationContext)
+                var timeListener: OnTimeSetListener = OnTimeSetListener { _, i, i2 ->
+                    picker.hour = i
+                    picker.minute = i2
+                    var l1 = ArrayList<Int>()
+                    l1.add(picker.hour)
+                    l1.add(picker.minute)
+
+                    if (l1[1] < 10) {
+                        t = LocalTime.parse(
+                            l1[0].toString() + ":0" + l1[1].toString()
+                                .format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
+                    } else {
+                        t = LocalTime.parse(
+                            l1[0].toString() + ":" + l1[1].toString()
+                                .format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
+                    }
+                    if(t == null){
+                        t = LocalTime.now()
+                    }
+                    insertItem(Medicine(null,currentName,currentAmount,t!!))
+                }
+                val a: TimePickerDialog = TimePickerDialog(
+                    this,
+                    timeListener,
+                    LocalTime.now().hour.dec(),
+                    LocalTime.now().minute.dec(),
+                    true
+                )
+                a.show()
             }
-            val a: TimePickerDialog = TimePickerDialog(
-                this,
-                timeListener,
-                LocalTime.now().hour.dec(),
-                LocalTime.now().minute.dec(),
-                true
-            )
-            a.show()
-            var l1 = ArrayList<Int>()
-            l1.add(picker.hour)
-            l1.add(picker.minute)
-            return l1
+
+
         }
 
         fun removeItem(med : Medicine) {
@@ -229,6 +238,7 @@ class MainActivity : ComponentActivity() {
         }
 
         fun insertItem(med: Medicine) {
+            medicines.add(med)
             medicineDao!!.insertMedicine(med)
         }
 

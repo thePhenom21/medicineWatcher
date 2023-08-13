@@ -176,9 +176,9 @@ class MainActivity : ComponentActivity() {
             val med = medicine
             var tp = medicine.id
 
-            val alarmIntent = Intent(this, AlarmReceiver::class.java)
-            val pendingIntent by remember{
-                mutableStateOf(PendingIntent.getActivity(this,0,alarmIntent, FLAG_MUTABLE))}
+            val alarmIntent = Intent(applicationContext, AlarmReceiver::class.java)
+
+            val pendingIntent = PendingIntent.getBroadcast(applicationContext,0,alarmIntent, FLAG_MUTABLE)
 
             val alarmMgr: AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
@@ -211,8 +211,6 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(5.dp)
                         )
                     }
-
-
 
 
                     if(alarmSet){
@@ -311,33 +309,7 @@ class MainActivity : ComponentActivity() {
 
     }
 
-class AlarmReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        val contentTitle = intent.getStringExtra("contentTitle");
-        val contentText = intent.getStringExtra("contentText");
 
-        val CHANNEL_ID = "my_channel_01";
-        val notificationManager : NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Channel Name";
-            val importance = NotificationManager.IMPORTANCE_HIGH;
-            val mChannel = NotificationChannel(CHANNEL_ID, name, importance);
-            notificationManager.createNotificationChannel(mChannel)
-        }
-
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        val notificationBuilder =  NotificationCompat.Builder(context, CHANNEL_ID)
-            .setContentTitle(contentTitle)
-            .setContentText(contentText)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-
-        notificationManager.notify(0, notificationBuilder.build());
-
-        Log.d("ALARMRECEIVER", "INSIDE");
-
-    }
-}
 
 
 

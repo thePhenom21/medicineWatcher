@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.provider.AlarmClock
 import android.util.Log
 import android.widget.TimePicker
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -74,6 +75,9 @@ class MainActivity : ComponentActivity() {
 
     var added = true
 
+    var alarmIntent : Intent? = null
+    var pendingIntent : PendingIntent? = null
+    var alarmMgr : AlarmManager? = null
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +97,11 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        alarmIntent = Intent(this, AlarmReceiver::class.java)
+
+        pendingIntent = PendingIntent.getBroadcast(this,0, alarmIntent!!, FLAG_MUTABLE)
+
+        alarmMgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     }
 
@@ -176,11 +185,6 @@ class MainActivity : ComponentActivity() {
             val med = medicine
             var tp = medicine.id
 
-            val alarmIntent = Intent(applicationContext, AlarmReceiver::class.java)
-
-            val pendingIntent = PendingIntent.getBroadcast(applicationContext,0,alarmIntent, FLAG_MUTABLE)
-
-            val alarmMgr: AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
 
             val calendar: Calendar = Calendar.getInstance().apply {
@@ -212,22 +216,21 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-
                     if(alarmSet){
                         androidx.compose.material3.Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
-                        alarmMgr.setRepeating(
+                        alarmMgr?.setExact(
                             AlarmManager.RTC_WAKEUP,
-                            calendar.timeInMillis,
-                            AlarmManager.INTERVAL_DAY,
+                            10000,
                             pendingIntent
                         )
+                        //Toast.makeText(applicationContext,"alarm", Toast.LENGTH_SHORT).show()
                     }
                     else {
                         androidx.compose.material3.Icon(
                             painter = rememberVectorPainter(Icons.Outlined.Info),
                             contentDescription = "info"
                         )
-                        alarmMgr.cancel(pendingIntent)
+                        alarmMgr?.cancel(pendingIntent)
                     }
                     Button(onClick = {
                         try {

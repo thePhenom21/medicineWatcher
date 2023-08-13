@@ -30,7 +30,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.room.Room
+import com.example.medicinewatcher.dao.MedicineDao
 import com.example.medicinewatcher.model.Medicine
 import com.example.medicinewatcher.repo.MedicineRepository
 import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
@@ -40,12 +40,12 @@ class MainActivity : ComponentActivity() {
 
     var id : Int = 0
 
-    val db = Room.databaseBuilder(
-        applicationContext,
-        MedicineRepository::class.java,"medicines").build()
 
-    val medicineDao = db.medicineDao()
-    val medicines : SnapshotStateList<Medicine> = medicineDao.getAll() as SnapshotStateList<Medicine>
+    var db: MedicineRepository? = null
+
+    var medicineDao : MedicineDao? = null
+
+    var medicines = SnapshotStateList<Medicine>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,15 +60,32 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     mainPage()
+                    createDB()
                 }
             }
         }
+
+
+
     }
+    fun createDB(){
+        db = MedicineRepository.getDatabase(applicationContext)
+        medicineDao = db!!.medicineDao()
+        medicines = SnapshotStateList()
+        for (item in medicineDao!!.getAll()){
+            medicines.add(item)
+        }
+    }
+
+
+
+
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Preview(showBackground = true)
     @Composable
     fun mainPage(){
+
 
 
         var currentName by remember { mutableStateOf("") }
@@ -89,7 +106,7 @@ class MainActivity : ComponentActivity() {
                     showDialog = false
                     val med : Medicine = Medicine(id++,currentName,currentAmount,currentTime)
                     medicines.add(med)
-                    medicineDao.insertMedicine(med)
+                    insertItem(med)
                     currentAmount = ""
                     currentTime = ""
                     currentName = ""
@@ -147,13 +164,19 @@ class MainActivity : ComponentActivity() {
     }
 
     fun removeItem(id : Int){
+
         for(item in medicines){
             if( item.id == id ){
                 medicines.remove(item)
-                medicineDao.deleteMedicineById(id)
+                medicineDao!!.deleteMedicineById(id)
             }
         }
     }
+
+    fun insertItem(med : Medicine){
+        medicineDao!!.insertMedicine(med)
+    }
+
 
 
 }

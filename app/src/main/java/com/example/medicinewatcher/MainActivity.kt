@@ -1,9 +1,20 @@
 package com.example.medicinewatcher
 
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
+import android.provider.AlarmClock
+import android.util.Log
 import android.widget.TimePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +27,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,19 +43,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.app.NotificationCompat
 import com.example.medicinewatcher.dao.MedicineDao
 import com.example.medicinewatcher.model.Medicine
 import com.example.medicinewatcher.repo.MedicineRepository
 import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
+import kotlinx.coroutines.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.*
 
 
 class MainActivity : ComponentActivity() {
@@ -159,8 +176,26 @@ class MainActivity : ComponentActivity() {
             val med = medicine
             var tp = medicine.id
 
-            Card(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
-                Column {
+            val alarmIntent = Intent(this, AlarmReceiver::class.java)
+            val pendingIntent by remember{
+                mutableStateOf(PendingIntent.getActivity(this,0,alarmIntent, FLAG_MUTABLE))}
+
+            val alarmMgr: AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+
+            val calendar: Calendar = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                set(Calendar.HOUR_OF_DAY, medicine.time.hour)
+                set(Calendar.MINUTE,medicine.time.minute)
+            }
+
+
+            var alarmSet by remember {
+                mutableStateOf(true)
+            }
+
+            Card(onClick = { alarmSet = !alarmSet }, modifier = Modifier.padding(10.dp)) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(
                         modifier = Modifier
                             .padding(5.dp)
@@ -175,6 +210,26 @@ class MainActivity : ComponentActivity() {
                             "Time: ${medicine.createdDateFormatted}",
                             modifier = Modifier.padding(5.dp)
                         )
+                    }
+
+
+
+
+                    if(alarmSet){
+                        androidx.compose.material3.Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
+                        alarmMgr.setRepeating(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.timeInMillis,
+                            AlarmManager.INTERVAL_DAY,
+                            pendingIntent
+                        )
+                    }
+                    else {
+                        androidx.compose.material3.Icon(
+                            painter = rememberVectorPainter(Icons.Outlined.Info),
+                            contentDescription = "info"
+                        )
+                        alarmMgr.cancel(pendingIntent)
                     }
                     Button(onClick = {
                         try {
@@ -203,17 +258,28 @@ class MainActivity : ComponentActivity() {
                     l1.add(picker.hour)
                     l1.add(picker.minute)
 
-                    if (l1[1] < 10) {
+                    if (l1[1] < 10 && l1[0] >= 10) {
                         t = LocalTime.parse(
                             l1[0].toString() + ":0" + l1[1].toString()
                                 .format(DateTimeFormatter.ofPattern("HH:mm"))
                         )
-                    } else {
+                    } else if(l1[0] >= 10 && l1[1] >= 10){
                         t = LocalTime.parse(
                             l1[0].toString() + ":" + l1[1].toString()
                                 .format(DateTimeFormatter.ofPattern("HH:mm"))
                         )
+                    }else if(l1[0] < 10 && l1[1] >= 10){
+                        t = LocalTime.parse(
+                            "0"+l1[0].toString() + ":" + l1[1].toString()
+                                .format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
+                    }else{
+                        t = LocalTime.parse(
+                            "0"+l1[0].toString() + ":0" + l1[1].toString()
+                                .format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
                     }
+
                     if(t == null){
                         t = LocalTime.now()
                     }
@@ -244,6 +310,35 @@ class MainActivity : ComponentActivity() {
 
 
     }
+
+class AlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val contentTitle = intent.getStringExtra("contentTitle");
+        val contentText = intent.getStringExtra("contentText");
+
+        val CHANNEL_ID = "my_channel_01";
+        val notificationManager : NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Channel Name";
+            val importance = NotificationManager.IMPORTANCE_HIGH;
+            val mChannel = NotificationChannel(CHANNEL_ID, name, importance);
+            notificationManager.createNotificationChannel(mChannel)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        val notificationBuilder =  NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        notificationManager.notify(0, notificationBuilder.build());
+
+        Log.d("ALARMRECEIVER", "INSIDE");
+
+    }
+}
+
 
 
 

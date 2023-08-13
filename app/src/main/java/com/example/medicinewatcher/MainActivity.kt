@@ -1,6 +1,5 @@
 package com.example.medicinewatcher
 
-import android.animation.TimeAnimator.TimeListener
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
 import android.os.Build
@@ -96,7 +95,6 @@ class MainActivity : ComponentActivity() {
         @Composable
         fun mainPage() {
 
-            var id by remember { mutableStateOf(0) }
             var currentName by remember { mutableStateOf("") }
             var currentAmount by remember { mutableStateOf("") }
             var currentTime by remember { mutableStateOf(LocalTime.now()) }
@@ -118,7 +116,7 @@ class MainActivity : ComponentActivity() {
                 if (showDialog) {
                     Dialog(onDismissRequest = {
                         showDialog = false
-                        val med: Medicine = Medicine(id++,currentName, currentAmount, currentTime)
+                        val med: Medicine = Medicine(null,currentName, currentAmount, currentTime)
                         medicines.add(med)
                         insertItem(med)
                         currentAmount = ""

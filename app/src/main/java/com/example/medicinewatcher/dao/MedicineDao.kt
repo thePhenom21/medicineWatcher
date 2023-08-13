@@ -9,10 +9,10 @@ interface MedicineDao {
     @Query("SELECT * FROM medicine")
     fun getAll(): List<Medicine>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertMedicine(medicine: Medicine)
 
-    @Query("DELETE FROM medicine WHERE id =:id ")
-    fun deleteMedicineById(id : Int)
+    @Delete
+    fun deleteMedicineById(medicine: Medicine)
 
 }

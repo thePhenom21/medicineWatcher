@@ -4,10 +4,14 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
+import com.example.medicinewatcher.converters.Converter
 import com.example.medicinewatcher.dao.MedicineDao
 import com.example.medicinewatcher.model.Medicine
 
 @Database(entities = [Medicine::class], version = 1)
+@TypeConverters(Converter::class)
 abstract class MedicineRepository : RoomDatabase() {
     abstract fun medicineDao(): MedicineDao
 
@@ -17,14 +21,14 @@ abstract class MedicineRepository : RoomDatabase() {
 
         fun getDatabase(context: Context): MedicineRepository {
             // if the Instance is not null, return it, otherwise create a new database instance.
-            return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, MedicineRepository::class.java, "medicine")
+            if (Instance == null ){
+                return Room.databaseBuilder(context, MedicineRepository::class.java, "medicine")
                     .allowMainThreadQueries()
                     .build()
                     .also { Instance = it }
             }
+            return Instance!!
         }
     }
-
 
 }

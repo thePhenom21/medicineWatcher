@@ -186,13 +186,9 @@ class MainActivity : ComponentActivity() {
             var tp = medicine.id
 
 
-
-            val calendar: Calendar = Calendar.getInstance().apply {
-                timeInMillis = System.currentTimeMillis()
-                set(Calendar.HOUR_OF_DAY, medicine.time.hour)
-                set(Calendar.MINUTE,medicine.time.minute)
-            }
-
+            val calendar: Calendar = Calendar.getInstance()
+            calendar.set(Calendar.MINUTE,medicine.time.minute)
+            calendar.set(Calendar.HOUR_OF_DAY,medicine.time.hour)
 
             var alarmSet by remember {
                 mutableStateOf(true)
@@ -220,10 +216,10 @@ class MainActivity : ComponentActivity() {
                         androidx.compose.material3.Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
                         alarmMgr?.setExact(
                             AlarmManager.RTC_WAKEUP,
-                            10000,
+                            calendar.timeInMillis,
                             pendingIntent
                         )
-                        //Toast.makeText(applicationContext,"alarm", Toast.LENGTH_SHORT).show()
+                        //
                     }
                     else {
                         androidx.compose.material3.Icon(

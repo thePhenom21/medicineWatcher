@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "221882087776",
+    "project_id": "medicinewatcher-7e58f",
+    "storage_bucket": "medicinewatcher-7e58f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:221882087776:android:b2b604b7d4b60b1f4c4605",
+        "android_client_info": {
+          "package_name": "com.example.medicinewatcher"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "221882087776-8h6ltim6ebc3l8ev006crahujn1sgd97.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-Kl52J45dKbgjH6rNa5GwHMWZGCnXxq8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "221882087776-8h6ltim6ebc3l8ev006crahujn1sgd97.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

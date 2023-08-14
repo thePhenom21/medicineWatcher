@@ -3,6 +3,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "1.8.0-1.0.8"
+    id("com.google.gms.google-services")
 
 }
 
@@ -53,6 +54,8 @@ android {
 }
 
 dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
+    implementation("com.google.firebase:firebase-analytics-ktx")
 
     implementation("com.google.devtools.ksp:symbol-processing-api:1.9.0-1.0.11")
     implementation("androidx.core:core-ktx:1.9.0")

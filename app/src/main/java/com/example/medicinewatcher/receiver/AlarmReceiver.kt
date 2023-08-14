@@ -1,4 +1,4 @@
-package com.example.medicinewatcher
+package com.example.medicinewatcher.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context

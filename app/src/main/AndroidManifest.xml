@@ -30,12 +30,8 @@
 
 
         </activity>
-        <receiver android:name="AlarmReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.example.medicinewatcher" />
-            </intent-filter>
-        </receiver>
+        <activity android:name=".views.HomePage"></activity>
+        <activity android:name=".Middleground"></activity>
     </application>
 
 </manifest>

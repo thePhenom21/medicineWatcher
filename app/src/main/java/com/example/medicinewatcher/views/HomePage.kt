@@ -5,11 +5,16 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_MUTABLE
 import android.app.TimePickerDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Build
+import android.os.Bundle
+import android.os.PersistableBundle
 import android.widget.TimePicker
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -47,9 +53,13 @@ import com.example.medicinewatcher.repo.MedicineRepository
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class HomePage(applicationContext: Context) {
+class HomePage(var context: Context) {
 
-    var applicationContext : Context = applicationContext
+
+    var alarmIntent = Intent(context, AlarmReceiver::class.java)
+    var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
+    var alarmMgr = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
 
     var db: MedicineRepository? = null
 
@@ -59,15 +69,12 @@ class HomePage(applicationContext: Context) {
 
     var added = true
 
-    val alarmIntent = Intent(applicationContext, AlarmReceiver::class.java)
 
-    val pendingIntent = PendingIntent.getBroadcast(applicationContext,0, alarmIntent!!, FLAG_MUTABLE)
 
-    val alarmMgr = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
 
     fun createDB() {
-        db = MedicineRepository.getDatabase(applicationContext)
+        db = context?.let { MedicineRepository.getDatabase(it) }
         medicineDao = db!!.medicineDao()
         medicines = SnapshotStateList()
 
@@ -207,7 +214,7 @@ class HomePage(applicationContext: Context) {
     fun showTimeDialog(med: Medicine?, showTime: Boolean, currentName : String, currentAmount: String) {
         var t : LocalTime? = null
         if(showTime) {
-            var picker = TimePicker(applicationContext)
+            var picker = TimePicker(context)
             var timeListener: TimePickerDialog.OnTimeSetListener =
                 TimePickerDialog.OnTimeSetListener { _, i, i2 ->
                     picker.hour = i
@@ -244,7 +251,7 @@ class HomePage(applicationContext: Context) {
                     insertItem(Medicine(null, currentName, currentAmount, t!!))
                 }
             val a: TimePickerDialog = TimePickerDialog(
-                applicationContext,
+                context,
                 timeListener,
                 LocalTime.now().hour.dec(),
                 LocalTime.now().minute.dec(),

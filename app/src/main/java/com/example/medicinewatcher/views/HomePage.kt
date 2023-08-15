@@ -1,5 +1,6 @@
 package com.example.medicinewatcher.views
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_MUTABLE
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -136,23 +138,21 @@ class HomePage(applicationContext: Context) {
 
 
 
+    @SuppressLint("UnrememberedMutableState")
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun MedicineCart(medicine: Medicine, medicines: SnapshotStateList<Medicine>) {
         val med = medicine
-        var tp = medicine.id
 
 
         val calendar: Calendar = Calendar.getInstance()
         calendar.set(Calendar.MINUTE,medicine.time.minute)
         calendar.set(Calendar.HOUR_OF_DAY,medicine.time.hour)
 
-        var alarmSet by remember {
-            mutableStateOf(true)
-        }
 
-        Card(onClick = { alarmSet = !alarmSet }, modifier = Modifier.padding(10.dp)) {
+
+        Card(onClick = { med.alarmSet.value = if (med.alarmSet.value == 1) 0 else 1 }, modifier = Modifier.padding(10.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(
                     modifier = Modifier
@@ -170,7 +170,7 @@ class HomePage(applicationContext: Context) {
                     )
                 }
 
-                if(alarmSet){
+                if(med.alarmSet.value == 1){
 
                     Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
                     alarmMgr?.setExact(

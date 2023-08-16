@@ -31,7 +31,7 @@
 
         </activity>
         <activity android:name=".views.HomePage"></activity>
-        <activity android:name=".Middleground"></activity>
+        <receiver android:name=".receiver.AlarmReceiver"></receiver>
     </application>
 
 </manifest>

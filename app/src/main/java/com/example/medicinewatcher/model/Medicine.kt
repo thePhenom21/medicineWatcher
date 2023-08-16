@@ -16,7 +16,7 @@ data class Medicine(
         @ColumnInfo(name = "time") val time: LocalTime,
 
 ){
-        @Ignore var alarmSet: MutableState<Int> = mutableStateOf(1)
+        @Ignore var alarmSet: MutableState<Int> = mutableStateOf(0)
 
         val createdDateFormatted : String
                 @RequiresApi(Build.VERSION_CODES.O)

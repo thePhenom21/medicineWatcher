@@ -50,16 +50,13 @@ import com.example.medicinewatcher.dao.MedicineDao
 import com.example.medicinewatcher.model.Medicine
 import com.example.medicinewatcher.receiver.AlarmReceiver
 import com.example.medicinewatcher.repo.MedicineRepository
+import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class HomePage(var context: Context) {
+class HomePage(var context: Context){
 
-
-    var alarmIntent = Intent(context, AlarmReceiver::class.java)
-    var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
-    var alarmMgr = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
+    
 
     var db: MedicineRepository? = null
 
@@ -68,6 +65,11 @@ class HomePage(var context: Context) {
     var medicines = SnapshotStateList<Medicine>()
 
     var added = true
+    
+
+    var alarmIntent = Intent(context, AlarmReceiver::class.java)
+    var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
+    var alarmMgr = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
 
 
@@ -89,7 +91,7 @@ class HomePage(var context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun mainPage() {
+    fun mainPage(userName : String) {
 
         var currentName by remember { mutableStateOf("") }
         var currentAmount by remember { mutableStateOf("") }
@@ -98,7 +100,8 @@ class HomePage(var context: Context) {
         var showTime by remember { mutableStateOf(true) }
 
 
-        Column {
+        Column (horizontalAlignment = Alignment.CenterHorizontally){
+            Text(userName)
             LazyColumn(
                 modifier = Modifier.size(
                     width = LocalConfiguration.current.screenWidthDp.dp - 10.dp,

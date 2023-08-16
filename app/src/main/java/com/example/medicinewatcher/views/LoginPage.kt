@@ -1,5 +1,6 @@
 package com.example.medicinewatcher.views
 
+import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.RequiresApi
@@ -52,7 +53,7 @@ open class LoginPage {
                         onError()
                     } else {
                         coroutineScope.launch {
-                            onGoogleSignInCompleted(account.id!!)
+                            onGoogleSignInCompleted(account.displayName!!)
                         }
                     }
                 } catch (e: ApiException) {

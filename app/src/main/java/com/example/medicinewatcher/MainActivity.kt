@@ -1,5 +1,6 @@
 package com.example.medicinewatcher
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,6 +9,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -22,6 +24,7 @@ import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
 
+    var homePage : HomePage? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,28 +34,33 @@ class MainActivity : ComponentActivity() {
 
         var loginPage : LoginPage = LoginPage()
 
+        var homePage : HomePage = HomePage(this)
+
         var signedIn : MutableState<Boolean> = mutableStateOf(false)
+
+        var name : String = ""
 
 
         setContent {
-            MedicineWatcherTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
-                ) {
-                    if(!signedIn.value) {
+            if(signedIn.value){
+                homePage!!.createDB()
+                homePage!!.mainPage(name)
+            }
+            else{
+                MedicineWatcherTheme {
+                    // A surface container using the 'background' color from the theme
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background,
+                    ) {
                         loginPage.ButtonGoogleSignIn(
                             onGoogleSignInCompleted = {
                                 signedIn.value = true
+                                name = it
                             },
                             onError = { println("ERROR") },
                             googleSignInClient = googleSignIn
                         )
-                    }
-                    if(signedIn.value){
-                        HomePage(applicationContext).createDB()
-                        HomePage(applicationContext).mainPage()
                     }
                 }
             }

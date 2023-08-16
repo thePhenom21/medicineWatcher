@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.medicinewatcher"
+    namespace = "com.cosulabs.medicinewatcher"
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.medicinewatcher"
+        applicationId = "com.cosulabs.medicinewatcher"
         minSdk = 24
         targetSdk = 33
         versionCode = 1

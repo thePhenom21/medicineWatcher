@@ -1,5 +1,7 @@
 package com.example.medicinewatcher
 
+import android.app.AlarmManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -34,7 +36,10 @@ class MainActivity : ComponentActivity() {
 
         var loginPage : LoginPage = LoginPage()
 
-        var homePage : HomePage = HomePage(this)
+        var alarmMgr = this?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+
+        var homePage : HomePage = HomePage(this,alarmMgr)
 
         var signedIn : MutableState<Boolean> = mutableStateOf(false)
 

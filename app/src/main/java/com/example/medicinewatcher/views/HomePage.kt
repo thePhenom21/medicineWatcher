@@ -57,9 +57,7 @@ import com.example.medicinewatcher.ui.theme.MedicineWatcherTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-class HomePage(var context: Context){
-
-    
+class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
     var db: MedicineRepository? = null
 
@@ -69,11 +67,6 @@ class HomePage(var context: Context){
 
     var added = true
     
-
-    var alarmIntent = Intent(context, AlarmReceiver::class.java)
-    var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
-    var alarmMgr = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
 
 
 
@@ -101,6 +94,8 @@ class HomePage(var context: Context){
         var currentTime by remember { mutableStateOf(LocalTime.now()) }
         var showDialog by remember { mutableStateOf(false) }
         var showTime by remember { mutableStateOf(true) }
+
+
 
 
         Column (horizontalAlignment = Alignment.CenterHorizontally){
@@ -160,10 +155,19 @@ class HomePage(var context: Context){
     fun MedicineCart(medicine: Medicine, medicines: SnapshotStateList<Medicine>) {
         val med = medicine
 
+        var alarmRealSet : MutableState<Boolean> = remember {
+            mutableStateOf(false)
+        }
 
-        val calendar: Calendar = Calendar.getInstance()
-        calendar.set(Calendar.MINUTE,medicine.time.minute)
-        calendar.set(Calendar.HOUR_OF_DAY,medicine.time.hour)
+
+        var alarmIntent = Intent(context, AlarmReceiver::class.java)
+        var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
+
+        val calendar: Calendar =  Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            set(Calendar.MINUTE, medicine.time.minute)
+            set(Calendar.HOUR_OF_DAY, medicine.time.hour)
+        }
 
 
 
@@ -187,11 +191,16 @@ class HomePage(var context: Context){
                 if(med.alarmSet.value == 1){
 
                     Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
-                    alarmMgr?.setExact(
-                        AlarmManager.RTC_WAKEUP,
-                        calendar.timeInMillis,
-                        pendingIntent
-                    )
+
+                    if(!alarmRealSet.value) {
+                        alarmMgr.setExact(
+                            AlarmManager.RTC_WAKEUP,
+                            calendar.timeInMillis,
+                            pendingIntent
+                        )
+                        alarmRealSet.value = true
+                        println("alarm Setted up bro")
+                    }
 
                     //
                 }
@@ -201,6 +210,7 @@ class HomePage(var context: Context){
                         contentDescription = "info"
                     )
                     alarmMgr?.cancel(pendingIntent)
+                    alarmRealSet.value = false
                 }
                 Button(onClick = {
                     try {

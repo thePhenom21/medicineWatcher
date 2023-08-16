@@ -16,9 +16,12 @@ import android.widget.TimePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -104,10 +107,10 @@ class HomePage(var context: Context){
             Text(userName)
             LazyColumn(
                 modifier = Modifier.size(
-                    width = LocalConfiguration.current.screenWidthDp.dp - 10.dp,
-                    height = LocalConfiguration.current.screenHeightDp.dp - 50.dp
+                    width = LocalConfiguration.current.screenWidthDp.dp,
+                    height = LocalConfiguration.current.screenHeightDp.dp - 100.dp,
                 ),
-                contentPadding = PaddingValues(5.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 items(medicines) { med ->
                     MedicineCart(medicine = med, medicines)
@@ -141,7 +144,9 @@ class HomePage(var context: Context){
 
             Button(modifier = Modifier
                 .size(width = LocalConfiguration.current.screenWidthDp.dp - 10.dp, 200.dp)
-                .padding(10.dp), onClick = { showDialog = true }) {}
+                .padding(10.dp), onClick = { showDialog = true }) {
+                Text("Add Medicine")
+            }
         }
 
     }
@@ -166,10 +171,9 @@ class HomePage(var context: Context){
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Row(
                     modifier = Modifier
-                        .padding(5.dp)
-                        .size(
-                            width = LocalConfiguration.current.screenWidthDp.dp - 10.dp,
-                            height = 100.dp
+                        .defaultMinSize(
+                            minWidth = LocalConfiguration.current.screenWidthDp.dp - 10.dp,
+                            minHeight = 50.dp
                         )
                 ) {
                     Text("Name: ${medicine.name}", modifier = Modifier.padding(5.dp))

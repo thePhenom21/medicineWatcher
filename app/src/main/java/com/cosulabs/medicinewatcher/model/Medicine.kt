@@ -5,15 +5,16 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.room.*
+import com.google.firebase.firestore.DocumentReference
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 data class Medicine(
-        val id: String?,
+        var id: DocumentReference?,
         val name: String,
         val amount: String,
         val time: LocalTime,
-        val user: String
+        val userId: String
 
 ){
         var alarmSet: MutableState<Int> = mutableStateOf(0)

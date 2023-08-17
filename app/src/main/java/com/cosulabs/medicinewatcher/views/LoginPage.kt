@@ -3,13 +3,17 @@ package com.cosulabs.medicinewatcher.views
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.sharp.AccountCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -21,13 +25,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.vector.VectorPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.cosulabs.medicinewatcher.AuthResultContract
+import com.cosulabs.medicinewatcher.R
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.launch
@@ -55,40 +61,44 @@ open class LoginPage {
                         onError()
                     } else {
                         coroutineScope.launch {
-                            onGoogleSignInCompleted(account.displayName!!)
+                            onGoogleSignInCompleted(account.id!!)
                         }
                     }
                 } catch (e: ApiException) {
                     onError()
                 }
             }
-
-        Button(
-            onClick = { authResultLauncher.launch(signInRequestCode)
+        Column (horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth(), verticalArrangement = Arrangement.Center){
+            Button(
+                onClick = { authResultLauncher.launch(signInRequestCode)
                 },
-            modifier = Modifier
-                .width(300.dp)
-                .height(45.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(White)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(45.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(White)
             ) {
-                Icon(
-                    painter = rememberVectorPainter(Icons.Outlined.Info),
-                    contentDescription = "Google icon",
-                    tint = Color.Unspecified,
-                )
-                Text(
-                    text = "Access using Google",
-                    color = Black,
-                    fontWeight = FontWeight.W600,
-                    fontSize = 16.sp,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = rememberVectorPainter(image = Icons.Sharp.AccountCircle),
+                        contentDescription = "Google icon",
+                        tint = Color.Unspecified,
+                    )
+                    Text(
+                        text = "Access using Google",
+                        color = Black,
+                        fontWeight = FontWeight.W600,
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
+                }
             }
         }
+
     }
 
 }

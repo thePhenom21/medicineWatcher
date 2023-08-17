@@ -47,6 +47,9 @@ import com.cosulabs.medicinewatcher.model.Medicine
 import com.cosulabs.medicinewatcher.receiver.AlarmReceiver
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -65,10 +68,10 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
         db.collection("medicines").get().addOnSuccessListener {
             result -> for(doc in result){
                 val map = doc.data
-                val medi = Medicine(doc.id,map.get("name") as String,map.get("amount") as String,
+                val medi = Medicine(null,map.get("name") as String,map.get("amount") as String,
                     Converter().fromTimestamp(map.get("time") as String)!!,user!!
                 )
-                if(medi.user == user) {
+                if(medi.userId == user) {
                     medicines.add(medi)
                 }
             }
@@ -92,7 +95,6 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
         user = userName
 
         Column (horizontalAlignment = Alignment.CenterHorizontally){
-            Text(userName)
             LazyColumn(
                 modifier = Modifier.size(
                     width = LocalConfiguration.current.screenWidthDp.dp,
@@ -275,7 +277,7 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
     fun removeItem(med : Medicine) {
         medicines.remove(med)
-        db.collection("medicines").document(med.name).delete()
+        med.id!!.delete()
     }
 
     fun insertItem(med: Medicine) {
@@ -284,11 +286,19 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
             "name" to med.name,
             "amount" to med.amount,
             "time" to Converter().dateToTimestamp(med.time),
-            "user" to med.user
+            "user" to med.userId
         )
-        db.collection("medicines").add(
-            medicine)
 
+
+        runBlocking {
+            launch {
+                val autoID = db.collection("medicines").add(
+                    medicine)
+                delay(1000L)
+                med.id = autoID.result
+            }
+
+        }
     }
 
 }

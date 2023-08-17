@@ -8,15 +8,14 @@ import androidx.room.*
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
-@Entity
 data class Medicine(
-        @PrimaryKey(autoGenerate = true) val id: Int?,
-        @ColumnInfo(name = "name") val name: String,
-        @ColumnInfo(name = "amount") val amount: String,
-        @ColumnInfo(name = "time") val time: LocalTime,
+        val id: String?,
+        val name: String,
+        val amount: String,
+        val time: LocalTime,
 
 ){
-        @Ignore var alarmSet: MutableState<Int> = mutableStateOf(0)
+        var alarmSet: MutableState<Int> = mutableStateOf(0)
 
         val createdDateFormatted : String
                 @RequiresApi(Build.VERSION_CODES.O)

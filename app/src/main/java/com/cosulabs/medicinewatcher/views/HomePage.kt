@@ -42,45 +42,42 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
-import com.cosulabs.medicinewatcher.dao.MedicineDao
+import com.cosulabs.medicinewatcher.converters.Converter
 import com.cosulabs.medicinewatcher.model.Medicine
 import com.cosulabs.medicinewatcher.receiver.AlarmReceiver
-import com.cosulabs.medicinewatcher.repo.MedicineRepository
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
-    var db: MedicineRepository? = null
-
-    var medicineDao: MedicineDao? = null
+    var db = Firebase.firestore
 
     var medicines = SnapshotStateList<Medicine>()
 
     var added = true
-    
 
-
-
-
-    fun createDB() {
-        db = context?.let { MedicineRepository.getDatabase(it) }
-        medicineDao = db!!.medicineDao()
-        medicines = SnapshotStateList()
-
-        for (item in medicineDao!!.getAll()) {
-            medicines.add(item)
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createDB(){
+        db.collection("medicines").get().addOnSuccessListener {
+            result -> for(doc in result){
+                val map = doc.data
+                val medi = Medicine(doc.id,map.get("name") as String,map.get("amount") as String,
+                    Converter().fromTimestamp(map.get("time") as String)!!
+                )
+                medicines.add(medi)
+            }
         }
     }
-
-
+    
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun mainPage(userName : String, navContoller: NavHostController) {
-        Log.d("important","wowowowowoewodkowakdapwo")
+
         var currentName by remember { mutableStateOf("") }
         var currentAmount by remember { mutableStateOf("") }
         var currentTime by remember { mutableStateOf(LocalTime.now()) }
@@ -274,12 +271,19 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
     fun removeItem(med : Medicine) {
         medicines.remove(med)
-        medicineDao!!.deleteMedicineById(med)
+        db.collection("medicines").document(med.name).delete()
     }
 
     fun insertItem(med: Medicine) {
         medicines.add(med)
-        medicineDao!!.insertMedicine(med)
+        val medicine = hashMapOf(
+            "name" to med.name,
+            "amount" to med.amount,
+            "time" to Converter().dateToTimestamp(med.time)
+        )
+        db.collection("medicines").add(
+            medicine)
+
     }
 
 }

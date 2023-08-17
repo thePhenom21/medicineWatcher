@@ -10,9 +10,13 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.cosulabs.medicinewatcher.ui.theme.MedicineWatcherTheme
 import com.cosulabs.medicinewatcher.views.HomePage
 import com.cosulabs.medicinewatcher.views.LoginPage
@@ -26,64 +30,70 @@ class MainActivity : ComponentActivity() {
 
     var homePage : HomePage? = null
 
+    var alarmMgr: AlarmManager? = null
+
+    var googleSignIn : GoogleSignInClient? = null
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var googleSignIn : GoogleSignInClient = getGoogleLoginAuth()
+        alarmMgr = this?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        var loginPage : LoginPage = LoginPage()
-
-        var alarmMgr = this?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        googleSignIn  = getGoogleLoginAuth()
 
 
-        var homePage : HomePage = HomePage(this,alarmMgr)
-
-        var signedIn : MutableState<Boolean> = mutableStateOf(false)
-
-        var name : String = ""
 
 
         setContent {
-            if(signedIn.value){
-                homePage!!.createDB()
-                homePage!!.mainPage(name)
-            }
-            else{
                 MedicineWatcherTheme {
                     // A surface container using the 'background' color from the theme
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background,
                     ) {
-                        loginPage.ButtonGoogleSignIn(
-                            onGoogleSignInCompleted = {
-                                signedIn.value = true
-                                name = it
-                            },
-                            onError = { println("ERROR") },
-                            googleSignInClient = googleSignIn
-                        )
+                        NavContoller()
                     }
                 }
             }
         }
 
 
-    }
 
     private fun getGoogleLoginAuth(): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
-            .requestIdToken("221882087776-si99bi0vlve6j0s96tkempaid964pbd9.apps.googleusercontent.com")
+            .requestIdToken(client_id)
             .requestId()
             .requestProfile()
             .build()
         return GoogleSignIn.getClient(this, gso)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Composable
+    fun NavContoller(){
 
+
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = "login") {
+            composable("login") {
+                LoginPage().ButtonGoogleSignIn(
+                    onGoogleSignInCompleted = {
+                        navController.navigate("home/$it")
+                        HomePage(applicationContext,alarmMgr!!).createDB()
+                    },
+                    onError = { println("ERROR") },
+                    googleSignInClient = googleSignIn!!,
+                    navController
+                )
+            }
+            composable("home/{name}") {
+                backStackEntry ->  HomePage(applicationContext, alarmMgr!!).mainPage(userName = backStackEntry.arguments?.getString("name")!!, navContoller = navController) }
+            }
+        }
 }
+
 
 
 

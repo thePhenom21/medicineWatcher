@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Build
+import android.util.Log
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
 import com.cosulabs.medicinewatcher.dao.MedicineDao
 import com.cosulabs.medicinewatcher.model.Medicine
 import com.cosulabs.medicinewatcher.receiver.AlarmReceiver
@@ -77,8 +79,8 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun mainPage(userName : String) {
-
+    fun mainPage(userName : String, navContoller: NavHostController) {
+        Log.d("important","wowowowowoewodkowakdapwo")
         var currentName by remember { mutableStateOf("") }
         var currentAmount by remember { mutableStateOf("") }
         var currentTime by remember { mutableStateOf(LocalTime.now()) }

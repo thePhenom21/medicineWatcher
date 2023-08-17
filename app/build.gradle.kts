@@ -113,5 +113,10 @@ dependencies {
     implementation("com.google.dagger:dagger:2.27")
     annotationProcessor("com.google.dagger:dagger-compiler:2.27")
 
+    val nav_version = "2.5.0"
+
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+
 
 }

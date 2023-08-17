@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.cosulabs.medicinewatcher.AuthResultContract
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
@@ -39,6 +41,7 @@ open class LoginPage {
         onGoogleSignInCompleted: (String) -> Unit,
         onError: () -> Unit,
         googleSignInClient: GoogleSignInClient,
+        navController : NavHostController
     ) {
         val coroutineScope = rememberCoroutineScope()
         val signInRequestCode = 1
@@ -59,7 +62,6 @@ open class LoginPage {
                     onError()
                 }
             }
-
 
         Button(
             onClick = { authResultLauncher.launch(signInRequestCode)

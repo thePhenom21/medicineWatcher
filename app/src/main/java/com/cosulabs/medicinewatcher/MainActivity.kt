@@ -34,6 +34,8 @@ class MainActivity : ComponentActivity() {
 
     var googleSignIn : GoogleSignInClient? = null
 
+    var context : Context? = null
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +43,8 @@ class MainActivity : ComponentActivity() {
         alarmMgr = this?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         googleSignIn  = getGoogleLoginAuth()
+
+        context = this
 
 
 
@@ -74,6 +78,8 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun NavContoller(){
 
+        val homePage : HomePage = HomePage(context!!, alarmMgr!!)
+
 
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = "login") {
@@ -81,7 +87,7 @@ class MainActivity : ComponentActivity() {
                 LoginPage().ButtonGoogleSignIn(
                     onGoogleSignInCompleted = {
                         navController.navigate("home/$it")
-                        HomePage(applicationContext,alarmMgr!!).createDB()
+                        homePage.createDB()
                     },
                     onError = { println("ERROR") },
                     googleSignInClient = googleSignIn!!,
@@ -89,7 +95,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
             composable("home/{name}") {
-                backStackEntry ->  HomePage(applicationContext, alarmMgr!!).mainPage(userName = backStackEntry.arguments?.getString("name")!!, navContoller = navController) }
+                backStackEntry -> homePage.mainPage(userName = backStackEntry.arguments?.getString("name")!!, navContoller = navController) }
             }
         }
 }

@@ -13,6 +13,7 @@ data class Medicine(
         val name: String,
         val amount: String,
         val time: LocalTime,
+        val user: String
 
 ){
         var alarmSet: MutableState<Int> = mutableStateOf(0)

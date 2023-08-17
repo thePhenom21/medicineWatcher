@@ -58,15 +58,19 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
     var added = true
 
+    var user : String? = null
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDB(){
         db.collection("medicines").get().addOnSuccessListener {
             result -> for(doc in result){
                 val map = doc.data
                 val medi = Medicine(doc.id,map.get("name") as String,map.get("amount") as String,
-                    Converter().fromTimestamp(map.get("time") as String)!!
+                    Converter().fromTimestamp(map.get("time") as String)!!,user!!
                 )
-                medicines.add(medi)
+                if(medi.user == user) {
+                    medicines.add(medi)
+                }
             }
         }
     }
@@ -85,7 +89,7 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
         var showTime by remember { mutableStateOf(true) }
 
 
-
+        user = userName
 
         Column (horizontalAlignment = Alignment.CenterHorizontally){
             Text(userName)
@@ -254,7 +258,7 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
                     if (t == null) {
                         t = LocalTime.now()
                     }
-                    insertItem(Medicine(null, currentName, currentAmount, t!!))
+                    insertItem(Medicine(null, currentName, currentAmount, t!!,user!!))
                 }
             val a: TimePickerDialog = TimePickerDialog(
                 context,
@@ -279,7 +283,8 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
         val medicine = hashMapOf(
             "name" to med.name,
             "amount" to med.amount,
-            "time" to Converter().dateToTimestamp(med.time)
+            "time" to Converter().dateToTimestamp(med.time),
+            "user" to med.user
         )
         db.collection("medicines").add(
             medicine)

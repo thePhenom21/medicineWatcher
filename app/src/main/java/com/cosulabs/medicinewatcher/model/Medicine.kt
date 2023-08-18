@@ -17,7 +17,7 @@ data class Medicine(
         val userId: String
 
 ){
-        var alarmSet: MutableState<Int> = mutableStateOf(0)
+        var alarmSet: MutableState<Int> = mutableStateOf(1)
 
         val createdDateFormatted : String
                 @RequiresApi(Build.VERSION_CODES.O)

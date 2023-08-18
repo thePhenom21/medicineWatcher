@@ -9,7 +9,6 @@ import android.content.Context
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Build
-import android.util.Log
 import android.widget.TimePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +47,7 @@ import com.cosulabs.medicinewatcher.model.Medicine
 import com.cosulabs.medicinewatcher.receiver.AlarmReceiver
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -63,17 +64,25 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
     var user : String? = null
 
+    var alarmIntent = Intent(context, AlarmReceiver::class.java)
+    var pendingIntent: PendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDB(){
         db.collection("medicines").get().addOnSuccessListener {
             result -> for(doc in result){
                 val map = doc.data
-                val medi = Medicine(null,map.get("name") as String,map.get("amount") as String,
-                    Converter().fromTimestamp(map.get("time") as String)!!,user!!
-                )
-                if(medi.userId == user) {
-                    medicines.add(medi)
+                try {
+                    val medi = Medicine(
+                        null, map.get("name") as String, map.get("amount") as String,
+                        Converter().fromTimestamp(map.get("time") as String)!!, map.get("user") as String
+                    )
+                    if (medi.userId == user) {
+                        medicines.add(medi)
+                    }
                 }
+                catch (e : Exception){}
             }
         }
     }
@@ -95,6 +104,7 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
         user = userName
 
         Column (horizontalAlignment = Alignment.CenterHorizontally){
+            Text(userName)
             LazyColumn(
                 modifier = Modifier.size(
                     width = LocalConfiguration.current.screenWidthDp.dp,
@@ -150,21 +160,6 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
     fun MedicineCart(medicine: Medicine, medicines: SnapshotStateList<Medicine>) {
         val med = medicine
 
-        var alarmRealSet : MutableState<Boolean> = remember {
-            mutableStateOf(false)
-        }
-
-
-        var alarmIntent = Intent(context, AlarmReceiver::class.java)
-        var pendingIntent = PendingIntent.getBroadcast(context,0, alarmIntent!!, FLAG_MUTABLE)
-
-        val calendar: Calendar =  Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            set(Calendar.MINUTE, medicine.time.minute)
-            set(Calendar.HOUR_OF_DAY, medicine.time.hour)
-        }
-
-
 
         Card(onClick = { med.alarmSet.value = if (med.alarmSet.value == 1) 0 else 1 }, modifier = Modifier.padding(10.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -187,26 +182,24 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
                     Icon(painter = rememberVectorPainter(Icons.Outlined.Notifications), contentDescription = "alarm")
 
-                    if(!alarmRealSet.value) {
-                        alarmMgr.setExact(
-                            AlarmManager.RTC_WAKEUP,
-                            calendar.timeInMillis,
-                            pendingIntent
-                        )
-                        alarmRealSet.value = true
-                        println("alarm Setted up bro")
-                    }
-
-                    //
                 }
                 else {
                     Icon(
                         painter = rememberVectorPainter(Icons.Outlined.Info),
                         contentDescription = "info"
                     )
-                    alarmMgr?.cancel(pendingIntent)
-                    alarmRealSet.value = false
+
                 }
+
+                LaunchedEffect(key1 = med.alarmSet.value){
+                    if(med.alarmSet.value == 1){
+                        createAlarm(med)
+                    }
+                    else{
+                        alarmCancel()
+                    }
+                }
+
                 Button(onClick = {
                     try {
                         removeItem(med)
@@ -300,5 +293,29 @@ class HomePage(var context: Context,var alarmMgr: AlarmManager){
 
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createAlarm(medicine : Medicine){
+
+        val calendar: Calendar =  Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            set(Calendar.MINUTE, medicine.time.minute)
+            set(Calendar.HOUR_OF_DAY, medicine.time.hour)
+        }
+
+        alarmMgr.setExact(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+            )
+
+            println("alarm Setted up bro")
+        }
+
+
+    private fun alarmCancel(){
+        alarmMgr?.cancel(pendingIntent)
+    }
+
 
 }
